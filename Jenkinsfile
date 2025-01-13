@@ -9,7 +9,7 @@ pipeline {
         APP_NAME = "nginx-app"
         IMAGE_TAG = "latest"
         IMAGE_NAME = "${ECR_REPO}:${IMAGE_TAG}"
-        SONARQUBE = "sonar"
+        // SONARQUBE = "sonar"
     }
     stages {
         stage('Checkout Code') {
