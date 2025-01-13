@@ -1,5 +1,9 @@
 pipeline {
     agent any
+    tools {
+        dockerTool 'docker-nginx'
+    }
+
     environment {
         ECR_REPO = "nginx-app"
         AWS_ROLE_ARN_ECR = 'arn:aws:iam::010438494949:role/jenkins-role-ecr'  // IAM Role ARN for ECR
