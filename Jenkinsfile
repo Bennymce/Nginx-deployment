@@ -79,6 +79,9 @@ pipeline {
                 script {
                     // Login to AWS ECR using the assumed IAM role
                     withAWS(region: us-east-1, role: 'arn:aws:iam::010438494949:role/jenkins-role-ecr') {
+                        echo "Logged into AWS with assumed role"
+                        // Debugging: Print out AWS credentials
+                        sh "aws sts get-caller-identity"
                         sh "aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${ECR_REPO}"
                     }
                 }
@@ -89,6 +92,7 @@ pipeline {
             steps {
                 script {
                     // Push Docker image to ECR using Docker command
+                    echo "Pushing image to ECR: ${IMAGE_NAME}"
                     withAWS(region: us-east-1, role: 'arn:aws:iam::010438494949:role/jenkins-role-ecr') {
                         sh "docker push ${IMAGE_NAME}"
                     }
