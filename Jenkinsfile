@@ -1,7 +1,7 @@
 pipeline {
     agent any
     tools {
-        dockerTool 'docker-nginx'
+        docker 'docker-nginx'
     }
 
     environment {
