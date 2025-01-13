@@ -14,7 +14,7 @@ pipeline {
     stages {
         stage('Checkout Code') {
             steps {
-                git 'https://github.com/Bennymce/Nginx-deployment.git'
+                git branch: 'main', url: 'https://github.com/Bennymce/Nginx-deployment.git'
             }
         }
         stage('Build Docker Image') {
@@ -81,5 +81,3 @@ pipeline {
         }
     }
 }
-
-    
