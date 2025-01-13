@@ -18,14 +18,6 @@ pipeline {
             }
         }
         
-        stage('Install AWS CLI') {
-            steps {
-                script {
-                    // Install AWS CLI
-                    sh 'apt-get update &&  apt-get install -y awscli'
-                }
-            }
-        }
 
         stage('Build Docker Image') {
             steps {
