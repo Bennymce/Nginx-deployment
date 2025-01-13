@@ -78,7 +78,7 @@ pipeline {
             steps {
                 script {
                     // Login to AWS ECR using the assumed IAM role
-                    withAWS(region: AWS_REGION, roleArn: AWS_ROLE_ARN_ECR) {
+                    withAWS(region: us-east-1, role: 'arn:aws:iam::010438494949:role/jenkins-role-ecr') {
                         sh "aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${ECR_REPO}"
                     }
                 }
@@ -89,7 +89,7 @@ pipeline {
             steps {
                 script {
                     // Push Docker image to ECR using Docker command
-                    withAWS(region: AWS_REGION, roleArn: AWS_ROLE_ARN_ECR) {
+                    withAWS(region: us-east-1, role: 'arn:aws:iam::010438494949:role/jenkins-role-ecr') {
                         sh "docker push ${IMAGE_NAME}"
                     }
                 }
@@ -100,7 +100,7 @@ pipeline {
             steps {
                 script {
                     // Deploy the app to EKS using kubectl
-                    withAWS(region: AWS_REGION, roleArn: AWS_ROLE_ARN_EKS) {
+                    withAWS(region: us-east-1, role: arn:aws:iam::010438494949:role/jenkins-role-eks) {
                         sh "aws eks update-kubeconfig --name ${CLUSTER_NAME}"
                         sh "kubectl apply -f nginx-deployment.yaml"
                     }
