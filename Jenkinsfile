@@ -1,14 +1,14 @@
 pipeline {
     agent any
     environment {
-        ECR_REPO = "nginx-app"
+        ECR_REPO = "010438494949.dkr.ecr.us-east-1.amazonaws.com/nginx-app"
         AWS_ROLE_ARN_ECR = 'arn:aws:iam::010438494949:role/jenkins-role-ecr'  // IAM Role ARN for ECR
         AWS_ROLE_ARN_EKS = 'arn:aws:iam::010438494949:role/jenkins-role-eks'
         AWS_REGION = "us-east-1"
         CLUSTER_NAME = "nginx-cluster"
         APP_NAME = "nginx-app/nginx-app"
         IMAGE_TAG = "latest"
-        IMAGE_NAME = "${ECR_REPO}/${APP_NAME}:${IMAGE_TAG}"
+        IMAGE_NAME = "${ECR_REPO}:${IMAGE_TAG}"
         SONARQUBE = "sonar"
     }
     stages {
@@ -22,8 +22,8 @@ pipeline {
                 script {
                     // List files to ensure Dockerfile and index.html are present
                     sh 'ls -alh'
-                    sh "docker build -t ${IMAGE_NAME}:${IMAGE_TAG} ."
-                    sh "docker run -d --name ${IMAGE_NAME} -p 8080:80 ${IMAGE_NAME}:${IMAGE_TAG}"
+                    sh "docker build -t ${IMAGE_NAME} ."
+                    sh "docker run -d --name ${APP_NAME} -p 8080:80 ${IMAGE_NAME}"
                 }
             }
         }
