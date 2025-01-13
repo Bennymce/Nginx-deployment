@@ -22,3 +22,5 @@
 }
 
 
+chmod +x git-commands.sh
+./git-commands.sh

@@ -1,7 +1,7 @@
 pipeline {
     agent any
     environment {
-        ECR_REPO = "your-ecr-repo"
+        ECR_REPO = "nginx-app"
         AWS_ROLE_ARN_ECR = 'arn:aws:iam::010438494949:role/jenkins-role-ecr'  // IAM Role ARN for ECR
         AWS_ROLE_ARN_EKS = 'arn:aws:iam::010438494949:role/jenkins-role-eks'
         AWS_REGION = "us-east-1"
