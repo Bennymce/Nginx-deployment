@@ -1,9 +1,5 @@
 pipeline {
     agent any
-    tools {
-        docker 'docker-nginx'
-    }
-
     environment {
         ECR_REPO = "nginx-app"
         AWS_ROLE_ARN_ECR = 'arn:aws:iam::010438494949:role/jenkins-role-ecr'  // IAM Role ARN for ECR
@@ -25,6 +21,7 @@ pipeline {
             steps {
                 script {
                     docker.build("${IMAGE_NAME}")
+                    docker run -d --name ${IMAGE_NAME} -p 8080:80 ${IMAGE_NAME}
                 }
             }
         }
