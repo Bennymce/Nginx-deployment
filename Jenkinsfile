@@ -39,7 +39,7 @@ pipeline {
                 script {
                     // Install Trivy
                     sh 'curl -sfL https://github.com/aquasecurity/trivy/releases/download/v0.35.0/trivy_0.35.0_Linux-64bit.deb -o trivy.deb'
-                    sh 'sudo dpkg -i trivy.deb'
+                    sh 'dpkg -i trivy.deb || true'
                     sh 'rm trivy.deb'  // Clean up
                 }
             }
