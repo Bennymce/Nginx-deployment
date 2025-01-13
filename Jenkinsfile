@@ -100,7 +100,7 @@ pipeline {
             steps {
                 script {
                     // Deploy the app to EKS using kubectl
-                    withAWS(region: us-east-1, role: arn:aws:iam::010438494949:role/jenkins-role-eks) {
+                    withAWS(region: us-east-1, role: 'arn:aws:iam::010438494949:role/jenkins-role-eks') {
                         sh "aws eks update-kubeconfig --name ${CLUSTER_NAME}"
                         sh "kubectl apply -f nginx-deployment.yaml"
                     }
