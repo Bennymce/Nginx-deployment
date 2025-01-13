@@ -22,7 +22,7 @@ pipeline {
             steps {
                 script {
                     // Install AWS CLI
-                    sh 'sudo apt-get update && sudo apt-get install -y awscli'
+                    sh 'apt-get update &&  apt-get install -y awscli'
                 }
             }
         }
