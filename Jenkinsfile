@@ -22,7 +22,7 @@ pipeline {
                 script {
                     // List files to ensure Dockerfile and index.html are present
                     sh 'ls -alh'
-                    sh "docker build -t ${IMAGE_NAME} ."
+                    sh "docker build -t ${IMAGE_NAME}:${IMAGE_TAG} ."
                     sh "docker run -d --name ${IMAGE_NAME} -p 8080:80 ${IMAGE_NAME}:${IMAGE_TAG}"
                 }
             }
