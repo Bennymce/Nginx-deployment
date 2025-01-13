@@ -6,7 +6,7 @@ pipeline {
         AWS_ROLE_ARN_EKS = 'arn:aws:iam::010438494949:role/jenkins-role-eks'
         AWS_REGION = "us-east-1"
         CLUSTER_NAME = "nginx-cluster"
-        APP_NAME = "nginx-app"
+        APP_NAME = "nginx-app/nginx-app"
         IMAGE_TAG = "latest"
         IMAGE_NAME = "${ECR_REPO}/${APP_NAME}:${IMAGE_TAG}"
         SONARQUBE = "sonar"
