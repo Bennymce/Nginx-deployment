@@ -1,0 +1,27 @@
+version: "3.9"
+services:
+  sonarqube:
+    image: sonarqube:latest
+    container_name: sonarqube
+    ports:
+      - "9000:9000"
+    environment:
+      - SONAR_ES_BOOTSTRAP_CHECKS_DISABLE=true
+
+  trivy:
+    image: aquasec/trivy:latest
+    container_name: trivy
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+
+  jenkins:
+    image: jenkins/jenkins:lts
+    container_name: jenkins
+    ports:
+      - "8080:8080"
+      - "50000:50000"
+    volumes:
+      - jenkins_home:/var/jenkins_home
+
+volumes:
+  jenkins_home:

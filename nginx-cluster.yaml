@@ -1,0 +1,18 @@
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+
+metadata:
+  name: nginx-cluster          # Name of the cluster
+  region: us-east-1            # AWS region
+
+nodeGroups:
+  - name: worker-nodes         # Node group name
+    instanceType: t2.micro     # EC2 instance type
+    desiredCapacity: 2         # Number of desired nodes
+    minSize: 2                 # Minimum node count
+    maxSize: 3                 # Maximum node count
+    volumeSize: 20             # EBS volume size (in GiB)
+    amiFamily: AmazonLinux2    # AMI type for the nodes
+
+iam:
+  withOIDC: true               # Enable OIDC for the cluster
