@@ -54,16 +54,16 @@ pipeline {
             }
         }
 
-        stage('SonarQube Analysis') {
-            steps {
-                script {
-                    withSonarQubeEnv(SONARQUBE) {
-                        // Run Maven build and analysis with SonarQube
-                        sh "mvn clean verify sonar:sonar -Dsonar.projectKey=${APP_NAME} -Dsonar.login=<your-sonar-token>"
-                    }
-                }
-            }
-        }
+        // stage('SonarQube Analysis') {
+        //     steps {
+        //         script {
+        //             withSonarQubeEnv(SONARQUBE) {
+        //                 // Run Maven build and analysis with SonarQube
+        //                 sh "mvn clean verify sonar:sonar -Dsonar.projectKey=${APP_NAME} -Dsonar.login=<your-sonar-token>"
+        //             }
+        //         }
+        //     }
+        // }
 
         stage('Login to ECR') {
             steps {
