@@ -21,7 +21,7 @@ pipeline {
             steps {
                 script {
                     docker.build("${IMAGE_NAME}")
-                    docker run -d --name ${IMAGE_NAME} -p 8080:80 ${IMAGE_NAME}
+                    sh "docker run -d --name ${IMAGE_NAME} -p 8080:80 ${IMAGE_NAME}"
                 }
             }
         }
@@ -47,7 +47,7 @@ pipeline {
                 script {
                     // Using the IAM role for AWS credentials to login to ECR
                     withAWS(region: AWS_REGION, roleArn: AWS_ROLE_ARN_ECR) {
-                        sh 'aws ecr get-login-password | docker login --username AWS --password-stdin ${ECR_REPO}'
+                        sh "aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${ECR_REPO}"
                     }
                 }
             }
@@ -69,8 +69,8 @@ pipeline {
                 script {
                     // Use kubectl with the assumed IAM role for EKS access
                     withAWS(region: AWS_REGION, roleArn: AWS_ROLE_ARN_EKS) {
-                        sh 'aws eks update-kubeconfig --name ${CLUSTER_NAME}'
-                        kubectl apply -f nginx-deployment.yaml
+                        sh "aws eks update-kubeconfig --name ${CLUSTER_NAME}"
+                        sh "kubectl apply -f nginx-deployment.yaml"
                     }
                 }
             }
