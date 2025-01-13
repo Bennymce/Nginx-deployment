@@ -2,8 +2,10 @@ pipeline {
     agent any
     environment {
         ECR_REPO = "your-ecr-repo"
+        AWS_ROLE_ARN_ECR = 'arn:aws:iam::010438494949:role/jenkins-role-ecr'  // IAM Role ARN for ECR
+        AWS_ROLE_ARN_EKS = 'arn:aws:iam::010438494949:role/jenkins-role-eks'
         AWS_REGION = "us-east-1"
-        CLUSTER_NAME = "your-cluster-name"
+        CLUSTER_NAME = "nginx-cluster"
         APP_NAME = "nginx-app"
         IMAGE_TAG = "latest"
         IMAGE_NAME = "${ECR_REPO}/${APP_NAME}:${IMAGE_TAG}"
@@ -12,7 +14,7 @@ pipeline {
     stages {
         stage('Checkout Code') {
             steps {
-                git 'https://github.com/your-repository/nginx-app.git'
+                git 'https://github.com/Bennymce/Nginx-deployment.git'
             }
         }
         stage('Build Docker Image') {
@@ -38,26 +40,37 @@ pipeline {
                 }
             }
         }
+
         stage('Login to ECR') {
             steps {
                 script {
-                    withAWS(credentials: 'aws-oidc-credentials', region: AWS_REGION) {
+                    // Using the IAM role for AWS credentials to login to ECR
+                    withAWS(region: AWS_REGION, roleArn: AWS_ROLE_ARN_ECR) {
                         sh 'aws ecr get-login-password | docker login --username AWS --password-stdin ${ECR_REPO}'
                     }
                 }
             }
         }
+
         stage('Push Image to ECR') {
             steps {
                 script {
-                    docker.push("${IMAGE_NAME}")
+                    // Push the Docker image to ECR using the assumed IAM role for ECR access
+                    withAWS(region: AWS_REGION, roleArn: AWS_ROLE_ARN_ECR) {
+                        docker.push("${IMAGE_NAME}")
+                    }
                 }
             }
         }
+
         stage('Deploy to EKS') {
             steps {
                 script {
-                    kubectl apply -f k8s/deployment.yaml
+                    // Use kubectl with the assumed IAM role for EKS access
+                    withAWS(region: AWS_REGION, roleArn: AWS_ROLE_ARN_EKS) {
+                        sh 'aws eks update-kubeconfig --name ${CLUSTER_NAME}'
+                        kubectl apply -f nginx-deployment.yaml
+                    }
                 }
             }
         }
@@ -68,3 +81,5 @@ pipeline {
         }
     }
 }
+
+    
