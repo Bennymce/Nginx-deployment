@@ -38,3 +38,8 @@ docker run -d \
 
 
 docker logs jenkins-docker get jenkins password
+
+
+withAWS(role: 'arn:aws:iam::<account-id>:role/<role-name>', roleSessionName: 'JenkinsSession') {
+    sh 'aws ecr get-login-password --region <region> | docker login --username AWS --password-stdin <account-id>.dkr.ecr.<region>.amazonaws.com'
+}

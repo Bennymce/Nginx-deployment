@@ -9,6 +9,8 @@ pipeline {
         APP_NAME = "nginx-app"
         IMAGE_TAG = "latest"
         IMAGE_NAME = "${ECR_REPO}:${IMAGE_TAG}"
+        AWS_ACCOUNT_ID = "010438494949"
+
         // SONARQUBE = "sonar"
     }
     stages {
@@ -70,11 +72,11 @@ pipeline {
             steps {
                 script {
                     // Login to AWS ECR using the assumed IAM role
-                    withAWS(region: us-east-1, role: 'arn:aws:iam::010438494949:role/jenkins-role-ecr') {
+                    //withAWS(region: us-east-1, role: 'arn:aws:iam::010438494949:role/jenkins-role-ecr') {
                         echo "Logged into AWS with assumed role"
                         // Debugging: Print out AWS credentials
-                        sh "aws sts get-caller-identity"
-                        sh "aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${ECR_REPO}"
+                        //sh "aws sts get-caller-identity"
+                        sh "aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
                     }
                 }
             }
