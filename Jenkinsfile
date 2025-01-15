@@ -10,8 +10,6 @@ pipeline {
         IMAGE_TAG = "latest"
         IMAGE_NAME = "${ECR_REPO}:${IMAGE_TAG}"
         AWS_ACCOUNT_ID = "010438494949"
-
-        // SONARQUBE = "sonar"
     }
     stages {
         stage('Checkout Code') {
@@ -19,7 +17,6 @@ pipeline {
                 git branch: 'main', url: 'https://github.com/Bennymce/Nginx-deployment.git'
             }
         }
-        
 
         stage('Build Docker Image') {
             steps {
@@ -57,25 +54,13 @@ pipeline {
             }
         }
 
-        // stage('SonarQube Analysis') {
-        //     steps {
-        //         script {
-        //             withSonarQubeEnv(SONARQUBE) {
-        //                 // Run Maven build and analysis with SonarQube
-        //                 sh "mvn clean verify sonar:sonar -Dsonar.projectKey=${APP_NAME} -Dsonar.login=<your-sonar-token>"
-        //             }
-        //         }
-        //     }
-        // }
-
         stage('Login to ECR') {
             steps {
                 script {
-                    // Login to AWS ECR using the assumed IAM role
-                    //withAWS(region: us-east-1, role: 'arn:aws:iam::010438494949:role/jenkins-role-ecr') {
-                        echo "Logged into AWS with assumed role"
-                        // Debugging: Print out AWS credentials
-                        //sh "aws sts get-caller-identity"
+                    // Login to AWS ECR using the assumed IAM role for ECR
+                    withAWS(region: "${AWS_REGION}", role: "${AWS_ROLE_ARN_ECR}") {
+                        echo "Logged into AWS ECR with assumed role"
+                        // AWS CLI login to ECR
                         sh "aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
                     }
                 }
@@ -87,7 +72,7 @@ pipeline {
                 script {
                     // Push Docker image to ECR using Docker command
                     echo "Pushing image to ECR: ${IMAGE_NAME}"
-                    withAWS(region: us-east-1, role: 'arn:aws:iam::010438494949:role/jenkins-role-ecr') {
+                    withAWS(region: "${AWS_REGION}", role: "${AWS_ROLE_ARN_ECR}") {
                         sh "docker push ${IMAGE_NAME}"
                     }
                 }
@@ -98,8 +83,8 @@ pipeline {
             steps {
                 script {
                     // Deploy the app to EKS using kubectl
-                    withAWS(region: us-east-1, role: 'arn:aws:iam::010438494949:role/jenkins-role-eks') {
-                        sh "aws eks update-kubeconfig --name ${CLUSTER_NAME}"
+                    withAWS(region: "${AWS_REGION}", role: "${AWS_ROLE_ARN_EKS}") {
+                        sh "aws eks update-kubeconfig --name ${CLUSTER_NAME} --region ${AWS_REGION}"
                         sh "kubectl apply -f nginx-deployment.yaml"
                     }
                 }
@@ -112,3 +97,4 @@ pipeline {
             cleanWs()
         }
     }
+}
