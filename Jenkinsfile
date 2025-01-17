@@ -10,6 +10,7 @@ pipeline {
         IMAGE_TAG = "latest"
         IMAGE_NAME = "${ECR_REPO}:${IMAGE_TAG}"
         AWS_ACCOUNT_ID = "010438494949"
+        KUBECONFIG = '/tmp/.kube/config'
     }
     
     stages {
@@ -71,46 +72,34 @@ pipeline {
             }
         }
         
+        stage('Install kubectl') {
+            steps {
+                script {
+                    sh '''
+                        curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+                        chmod +x kubectl
+                        mkdir -p /tmp/.kube
+                    '''
+                }
+            }
+        }
+        
         stage('Deploy to EKS') {
             steps {
                 script {
-                    // Create a pod template that uses the EKS service account
-                    podTemplate(yaml: """
-                        apiVersion: v1
-                        kind: Pod
-                        metadata:
-                          labels:
-                            jenkins: deploy-agent
-                        spec:
-                          serviceAccountName: jenkins-sa-eks
-                          containers:
-                          - name: kubectl
-                            image: bitnami/kubectl:1.24.0
-                            command:
-                            - cat
-                            tty: true
-                            env:
-                            - name: AWS_REGION
-                              value: ${AWS_REGION}
-                          securityContext:
-                            fsGroup: 1000
-                    """) {
-                        node(POD_LABEL) {
-                            container('kubectl') {
-                                // Get the code to access the deployment file
-                                checkout scm
-                                
-                                // Update kubeconfig and deploy
-                                sh """
-                                    kubectl config set-context --current --namespace=default
-                                    kubectl apply -f nginx-deployment.yaml
-                                    
-                                    # Verify deployment
-                                    kubectl get deployments -l app=${APP_NAME}
-                                    kubectl get services -l app=${APP_NAME}
-                                """
-                            }
-                        }
+                    withAWS(region: "${AWS_REGION}", role: "${AWS_ROLE_ARN_ECR}") {
+                        // Set up kubeconfig
+                        sh """
+                            ./kubectl version --client
+                            aws eks update-kubeconfig --name ${CLUSTER_NAME} --region ${AWS_REGION} --kubeconfig ${KUBECONFIG}
+                            
+                            # Deploy using kubectl
+                            ./kubectl --kubeconfig=${KUBECONFIG} apply -f nginx-deployment.yaml
+                            
+                            # Verify deployment
+                            ./kubectl --kubeconfig=${KUBECONFIG} get deployments -l app=${APP_NAME}
+                            ./kubectl --kubeconfig=${KUBECONFIG} get services -l app=${APP_NAME}
+                        """
                     }
                 }
             }
@@ -120,6 +109,7 @@ pipeline {
     post {
         always {
             cleanWs()
+            sh "rm -rf /tmp/.kube"
         }
     }
 }
