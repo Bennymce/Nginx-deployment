@@ -28,6 +28,7 @@ chmod +x git-commands.sh
 
 docker run -d \
   --name jenkins-docker \
+  --network="host" \
   -p 8080:8080 -p 50000:50000 \
   -v /home/ubuntu/Nginx-deployment:/var/jenkins_home/workspace/jenkins-app \
   -v /var/run/docker.sock:/var/run/docker.sock \
