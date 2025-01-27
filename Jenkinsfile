@@ -1,6 +1,6 @@
 pipeline {
     agent any
-    
+
     environment {
         ECR_REPO = "010438494949.dkr.ecr.us-east-1.amazonaws.com/nginx-app"
         AWS_ROLE_ARN_ECR = 'arn:aws:iam::010438494949:role/jenkins-role-ecr'
@@ -12,7 +12,7 @@ pipeline {
         AWS_ACCOUNT_ID = "010438494949"
         KUBECONFIG = '/tmp/.kube/config'
     }
-    
+
     stages {
         stage('Checkout Code') {
             steps {
@@ -25,23 +25,27 @@ pipeline {
                 script {
                     sh 'ls -alh'
                     sh "docker build -t ${IMAGE_NAME} ."
-                    
+
                     sh "docker rm -f ${APP_NAME} || true"
                     sh "docker run -d --name ${APP_NAME} -p 8081:80 ${IMAGE_NAME}"
                 }
             }
         }
-        
+
         stage('Install Trivy') {
             steps {
                 script {
-                    sh 'curl -sfL https://github.com/aquasecurity/trivy/releases/download/v0.35.0/trivy_0.35.0_Linux-64bit.deb -o trivy.deb'
-                    sh 'dpkg -i trivy.deb || true'
-                    sh 'rm trivy.deb'
+                    sh '''
+                        curl -sfL https://github.com/aquasecurity/trivy/releases/download/v0.35.0/trivy_0.35.0_Linux-64bit.deb -o trivy.deb
+                        dpkg -i trivy.deb || true
+                        rm trivy.deb
+                    '''
                 }
             }
         }
-        
+
+        // Uncomment this stage if Trivy scanning is required
+        /*
         stage('Trivy Scan') {
             steps {
                 script {
@@ -49,7 +53,30 @@ pipeline {
                 }
             }
         }
-        
+        */
+
+        stage('Debug Info') {
+            steps {
+                sh '''
+                    aws --version
+                    java -version
+                '''
+            }
+        }
+
+        stage('Debug AWS') {
+            steps {
+                script {
+                    withAWS(region: "${AWS_REGION}", role: "${AWS_ROLE_ARN_ECR}", roleSessionName: 'jenkins-ecr-login') {
+                        sh '''
+                            aws sts get-caller-identity
+                            aws ecr describe-repositories
+                        '''
+                    }
+                }
+            }
+        }
+
         stage('Login to ECR') {
             steps {
                 script {
@@ -60,7 +87,7 @@ pipeline {
                 }
             }
         }
-        
+
         stage('Push Image to ECR') {
             steps {
                 script {
@@ -71,7 +98,7 @@ pipeline {
                 }
             }
         }
-        
+
         stage('Install kubectl') {
             steps {
                 script {
@@ -83,29 +110,28 @@ pipeline {
                 }
             }
         }
-        
+
         stage('Deploy to EKS') {
             steps {
                 script {
                     withAWS(region: "${AWS_REGION}", role: "${AWS_ROLE_ARN_ECR}") {
-                        // Set up kubeconfig
-                        sh """
+                        sh '''
                             ./kubectl version --client
                             aws eks update-kubeconfig --name ${CLUSTER_NAME} --region ${AWS_REGION} --kubeconfig ${KUBECONFIG}
-                            
+
                             # Deploy using kubectl
                             ./kubectl --kubeconfig=${KUBECONFIG} apply -f nginx-deployment.yaml
-                            
+
                             # Verify deployment
                             ./kubectl --kubeconfig=${KUBECONFIG} get deployments -l app=${APP_NAME}
                             ./kubectl --kubeconfig=${KUBECONFIG} get services -l app=${APP_NAME}
-                        """
+                        '''
                     }
                 }
             }
         }
     }
-    
+
     post {
         always {
             cleanWs()
@@ -113,3 +139,4 @@ pipeline {
         }
     }
 }
+
