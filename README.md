@@ -76,3 +76,8 @@ withAWS(role: 'arn:aws:iam::<account-id>:role/<role-name>', roleSessionName: 'Je
         }
     ]
 }
+
+
+withAWS(region: "${AWS_REGION}", role: "${AWS_ROLE_ARN_ECR}", roleSessionName: 'jenkins-ecr-login') {
+                        echo "Logged into AWS ECR with assumed role"
+                        sh "aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"

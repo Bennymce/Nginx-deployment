@@ -80,10 +80,11 @@ pipeline {
         stage('Login to ECR') {
             steps {
                 script {
-                    withAWS(region: "${AWS_REGION}", role: "${AWS_ROLE_ARN_ECR}", roleSessionName: 'jenkins-ecr-login') {
-                        echo "Logged into AWS ECR with assumed role"
-                        sh "aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
-                    }
+                    sh """
+                aws ecr get-login-password --region us-east-1 | \
+                docker login --username AWS --password-stdin \
+                010438494949.dkr.ecr.us-east-1.amazonaws.com
+            """
                 }
             }
         }
@@ -139,4 +140,3 @@ pipeline {
         }
     }
 }
-
