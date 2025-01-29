@@ -81,3 +81,123 @@ withAWS(role: 'arn:aws:iam::<account-id>:role/<role-name>', roleSessionName: 'Je
 withAWS(region: "${AWS_REGION}", role: "${AWS_ROLE_ARN_ECR}", roleSessionName: 'jenkins-ecr-login') {
                         echo "Logged into AWS ECR with assumed role"
                         sh "aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
+
+
+
+
+
+docker run -d \
+  -p 8080:8080 \
+  -p 50000:50000 \
+  -v jenkins_home:/var/jenkins_home \
+  --memory="3g" --cpus="1.5" \
+  -v /var/run/docker.sock:/var/run/docker.sock \
+  -v /root/.aws:/root/.aws \
+  -e AWS_REGION=us-east-1 \
+  --name jenkins \
+  custom-jenkins  
+
+
+stage('Install Trivy') {
+            steps {
+                script {
+                    sh '''
+                        curl -sfL https://github.com/aquasecurity/trivy/releases/download/v0.35.0/trivy_0.35.0_Linux-64bit.deb -o trivy.deb
+                        dpkg -i trivy.deb || true
+                        rm trivy.deb
+                    '''
+                }
+            }
+        }
+
+        // Uncomment this stage if Trivy scanning is required
+        /*
+        stage('Trivy Scan') {
+            steps {
+                script {
+                    sh "trivy image ${IMAGE_NAME}"
+                }
+            }
+        }
+        */
+
+        stage('Debug Info') {
+            steps {
+                sh '''
+                    aws --version
+                    java -version
+                '''
+            }
+        }
+
+        stage('Debug AWS') {
+            steps {
+                script {
+                    withAWS(region: "${AWS_REGION}", role: "${AWS_ROLE_ARN_ECR}", roleSessionName: 'jenkins-ecr-login') {
+                        sh '''
+                            aws sts get-caller-identity
+                            aws ecr describe-repositories
+                        '''
+                    }
+                }
+            }
+        }
+
+        stage('Login to ECR') {
+            steps {
+                script {
+                    sh """
+                aws ecr get-login-password --region us-east-1 | \
+                docker login --username AWS --password-stdin \
+                010438494949.dkr.ecr.us-east-1.amazonaws.com
+            """
+                }
+            }
+        }
+
+        stage('Push Image to ECR') {
+            steps {
+                script {
+                    echo "Pushing image to ECR: ${IMAGE_NAME}"
+                    withAWS(region: "${AWS_REGION}", role: "${AWS_ROLE_ARN_ECR}", roleSessionName: 'jenkins-ecr-push') {
+                        sh "docker push ${IMAGE_NAME}"
+                    }
+                }
+            }
+        }
+
+        stage('Install kubectl') {
+            steps {
+                script {
+                    sh '''
+                        curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+                        chmod +x kubectl
+                        mkdir -p /tmp/.kube
+                    '''
+                }
+            }
+        }
+
+        stage('Deploy to EKS') {
+            steps {
+                script {
+                    withAWS(region: "${AWS_REGION}", role: "${AWS_ROLE_ARN_ECR}") {
+                        sh '''
+                            ./kubectl version --client
+                            aws eks update-kubeconfig --name ${CLUSTER_NAME} --region ${AWS_REGION} --kubeconfig ${KUBECONFIG}
+
+                            # Deploy using kubectl
+                            ./kubectl --kubeconfig=${KUBECONFIG} apply -f nginx-deployment.yaml
+
+                            # Verify deployment
+                            ./kubectl --kubeconfig=${KUBECONFIG} get deployments -l app=${APP_NAME}
+                            ./kubectl --kubeconfig=${KUBECONFIG} get services -l app=${APP_NAME}
+                        '''
+                    }
+                }
+            }
+        }
+    }                       
+
+
+    ./git-commands.sh

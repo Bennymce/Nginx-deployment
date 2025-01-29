@@ -19,7 +19,7 @@ pipeline {
                 git branch: 'main', url: 'https://github.com/Bennymce/Nginx-deployment.git'
             }
         }
-        
+
         stage('Build Docker Image') {
             steps {
                 script {
@@ -32,101 +32,20 @@ pipeline {
             }
         }
 
-        stage('Install Trivy') {
+        stage('Push Docker Image to ECR') {
             steps {
-                script {
-                    sh '''
-                        curl -sfL https://github.com/aquasecurity/trivy/releases/download/v0.35.0/trivy_0.35.0_Linux-64bit.deb -o trivy.deb
-                        dpkg -i trivy.deb || true
-                        rm trivy.deb
-                    '''
-                }
-            }
-        }
-
-        // Uncomment this stage if Trivy scanning is required
-        /*
-        stage('Trivy Scan') {
-            steps {
-                script {
-                    sh "trivy image ${IMAGE_NAME}"
-                }
-            }
-        }
-        */
-
-        stage('Debug Info') {
-            steps {
-                sh '''
-                    aws --version
-                    java -version
-                '''
-            }
-        }
-
-        stage('Debug AWS') {
-            steps {
-                script {
-                    withAWS(region: "${AWS_REGION}", role: "${AWS_ROLE_ARN_ECR}", roleSessionName: 'jenkins-ecr-login') {
-                        sh '''
-                            aws sts get-caller-identity
-                            aws ecr describe-repositories
-                        '''
-                    }
-                }
-            }
-        }
-
-        stage('Login to ECR') {
-            steps {
-                script {
-                    sh """
-                aws ecr get-login-password --region us-east-1 | \
-                docker login --username AWS --password-stdin \
-                010438494949.dkr.ecr.us-east-1.amazonaws.com
-            """
-                }
-            }
-        }
-
-        stage('Push Image to ECR') {
-            steps {
-                script {
-                    echo "Pushing image to ECR: ${IMAGE_NAME}"
-                    withAWS(region: "${AWS_REGION}", role: "${AWS_ROLE_ARN_ECR}", roleSessionName: 'jenkins-ecr-push') {
+                withAWS(region: AWS_REGION, role: AWS_ROLE_ARN_ECR) {
+                    script {
+                        def ecrLogin = sh(
+                            script: "aws ecr get-login-password --region ${AWS_REGION}",
+                            returnStdout: true
+                        ).trim()
+                        sh "echo '${ecrLogin}' | docker login --username AWS --password-stdin ${ECR_REPO}"
+                        
                         sh "docker push ${IMAGE_NAME}"
-                    }
-                }
-            }
-        }
-
-        stage('Install kubectl') {
-            steps {
-                script {
-                    sh '''
-                        curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
-                        chmod +x kubectl
-                        mkdir -p /tmp/.kube
-                    '''
-                }
-            }
-        }
-
-        stage('Deploy to EKS') {
-            steps {
-                script {
-                    withAWS(region: "${AWS_REGION}", role: "${AWS_ROLE_ARN_ECR}") {
-                        sh '''
-                            ./kubectl version --client
-                            aws eks update-kubeconfig --name ${CLUSTER_NAME} --region ${AWS_REGION} --kubeconfig ${KUBECONFIG}
-
-                            # Deploy using kubectl
-                            ./kubectl --kubeconfig=${KUBECONFIG} apply -f nginx-deployment.yaml
-
-                            # Verify deployment
-                            ./kubectl --kubeconfig=${KUBECONFIG} get deployments -l app=${APP_NAME}
-                            ./kubectl --kubeconfig=${KUBECONFIG} get services -l app=${APP_NAME}
-                        '''
+                        
+                        // Optional cleanup
+                        sh "docker rmi ${IMAGE_NAME} || true"
                     }
                 }
             }
