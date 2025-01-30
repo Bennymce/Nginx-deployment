@@ -61,7 +61,7 @@ pipeline {
 
                         // Configure kubeconfig for EKS
                         sh "mkdir -p /tmp/.kube"
-                        sh "aws eks update-kubeconfig --name your-cluster-name --region ${AWS_REGION} --role-arn arn:aws:iam::${AWS_ACCOUNT_ID}:role/${AWS_ROLE_ARN_ECR}"
+                        sh "aws eks update-kubeconfig --name ${CLUSTER_NAME} --region ${AWS_REGION} --role-arn arn:aws:iam::${AWS_ACCOUNT_ID}:role/${AWS_ROLE_ARN_ECR}"
                         // sh "aws eks update-kubeconfig --region ${AWS_REGION} --name ${CLUSTER_NAME} --kubeconfig ${KUBECONFIG}"
 
                         // Deploy application
