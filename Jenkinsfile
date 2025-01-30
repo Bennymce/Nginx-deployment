@@ -64,8 +64,12 @@ pipeline {
                         sh "aws eks update-kubeconfig --region ${AWS_REGION} --name ${CLUSTER_NAME} --kubeconfig ${KUBECONFIG}"
 
                         // Deploy application
-                        sh "kubectl apply -f nginx-deployment.yaml --kubeconfig ${KUBECONFIG}"
-                        sh "kubectl rollout status deployment/${APP_NAME} --kubeconfig ${KUBECONFIG}"
+                        sh "$HOME/bin/kubectl apply -f nginx-deployment.yaml --kubeconfig ${KUBECONFIG}"
+                        sh "$HOME/bin/kubectl rollout status deployment/${APP_NAME} --kubeconfig ${KUBECONFIG}"
+
+
+                        // sh "kubectl apply -f nginx-deployment.yaml --kubeconfig ${KUBECONFIG}"
+                        // sh "kubectl rollout status deployment/${APP_NAME} --kubeconfig ${KUBECONFIG}"
                     }
                 }
             }
