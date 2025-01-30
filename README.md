@@ -201,3 +201,8 @@ stage('Install Trivy') {
 
 
     ./git-commands.sh
+    aws ec2 associate-iam-instance-profile --instance-id 54.227.193.90 --iam-instance-profile Name=arn:aws:iam::010438494949:instance-profile/jenkins-role-ecr
+
+curl http://169.254.169.254/latest/meta-data/iam/security-credentials/jenkins-role-ecr
+aws ec2 describe-instances --instance-ids 54.227.193.90  --query "Reservations[].Instances[].IamInstanceProfile"
+

@@ -4,6 +4,7 @@ pipeline {
     environment {
         ECR_REPO = "010438494949.dkr.ecr.us-east-1.amazonaws.com/nginx-app"
         AWS_ROLE_ARN_ECR = 'arn:aws:iam::010438494949:role/jenkins-role-ecr'
+        AWS_ROLE_ARN_EKS = 'arn:aws:iam::010438494949:role/jenkins-role-eks'
         AWS_REGION = "us-east-1"
         CLUSTER_NAME = "nginx-cluster"
         APP_NAME = "nginx-app"
@@ -25,7 +26,6 @@ pipeline {
                 script {
                     sh 'ls -alh'
                     sh "docker build -t ${IMAGE_NAME} ."
-
                     sh "docker rm -f ${APP_NAME} || true"
                     sh "docker run -d --name ${APP_NAME} -p 8081:80 ${IMAGE_NAME}"
                 }
@@ -36,16 +36,26 @@ pipeline {
             steps {
                 withAWS(region: AWS_REGION, role: AWS_ROLE_ARN_ECR) {
                     script {
-                        def ecrLogin = sh(
-                            script: "aws ecr get-login-password --region ${AWS_REGION}",
-                            returnStdout: true
-                        ).trim()
-                        sh "echo '${ecrLogin}' | docker login --username AWS --password-stdin ${ECR_REPO}"
-                        
+                        sh "aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${ECR_REPO}"
                         sh "docker push ${IMAGE_NAME}"
-                        
-                        // Optional cleanup
                         sh "docker rmi ${IMAGE_NAME} || true"
+                    }
+                }
+            }
+        }
+
+        stage('Deploy to EKS') {
+            steps {
+                withAWS(region: AWS_REGION, role: AWS_ROLE_ARN_EKS) {
+                    script {
+                        sh 'curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"'
+                        sh 'chmod +x kubectl && sudo mv kubectl /usr/local/bin/'
+
+                        sh "mkdir -p /tmp/.kube"
+                        sh "aws eks update-kubeconfig --region ${AWS_REGION} --name ${CLUSTER_NAME} --kubeconfig ${KUBECONFIG}"
+                        
+                        sh "kubectl apply -f nginx-deployment.yaml --kubeconfig ${KUBECONFIG}"
+                        sh "kubectl rollout status deployment/${APP_NAME} --kubeconfig ${KUBECONFIG}"
                     }
                 }
             }
