@@ -49,7 +49,7 @@ pipeline {
                 withAWS(region: AWS_REGION, role: AWS_ROLE_ARN_EKS) {
                     script {
                         sh 'curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"'
-                        sh 'chmod +x kubectl && sudo mv kubectl /usr/local/bin/'
+                        sh 'chmod +x kubectl && mv kubectl /usr/local/bin/'
 
                         sh "mkdir -p /tmp/.kube"
                         sh "aws eks update-kubeconfig --region ${AWS_REGION} --name ${CLUSTER_NAME} --kubeconfig ${KUBECONFIG}"

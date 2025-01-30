@@ -205,4 +205,6 @@ stage('Install Trivy') {
 
 curl http://169.254.169.254/latest/meta-data/iam/security-credentials/jenkins-role-ecr
 aws ec2 describe-instances --instance-ids 54.227.193.90  --query "Reservations[].Instances[].IamInstanceProfile"
+aws iam list-attached-role-policies --role-name jenkins-role-ecr
+
 
