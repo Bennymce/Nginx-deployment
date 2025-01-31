@@ -52,12 +52,12 @@ pipeline {
                         sh '''
                           curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
                           chmod +x kubectl
-                          mkdir -p /var/jenkins_home/bin
-                          mv kubectl /var/jenkins_home/bin/
+                          mkdir -p /var/jenkins_home/workspace/nginx/bin
+                          mv kubectl /var/jenkins_home/workspace/nginx/bin
                         '''
                         
                         // Ensure kubectl path is set for the session
-                        withEnv(["PATH+bin=/var/jenkins_home/bin"]) {
+                        withEnv(["PATH+bin=/var/jenkins_home/workspace/nginx/bin"]) {
                             sh 'kubectl version --client'
                         }
                         
