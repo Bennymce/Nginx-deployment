@@ -45,6 +45,9 @@ pipeline {
         }
 
         stage('Deploy to EKS') {
+            environment {
+                PATH = "${env.HOME}/bin:${env.PATH}"
+            } 
             steps {
                 withAWS(region: AWS_REGION, role: AWS_ROLE_ARN_EKS) {
                     script {
