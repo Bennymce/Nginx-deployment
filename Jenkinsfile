@@ -46,7 +46,7 @@ pipeline {
 
         stage('Deploy to EKS') {
             steps {
-                withAWS(region: AWS_REGION, role: AWS_ROLE_ARN_ECR) {
+                withAWS(region: AWS_REGION, role: AWS_ROLE_ARN_EKS) {
                     script {
                         // Install kubectl in Jenkins user space
                         sh '''
