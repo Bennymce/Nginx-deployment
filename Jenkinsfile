@@ -52,13 +52,12 @@ pipeline {
                         sh '''
                           curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
                           chmod +x kubectl
-                          mkdir -p /var/jenkins_home/workspace/nginx/bin
-                          mv kubectl /var/jenkins_home/workspace/nginx/bin
+                          mkdir -p $HOME/bin
+                          mv kubectl $HOME/bin/
+                          export PATH=$HOME/bin:$PATH
                         '''
                         
-                        // Ensure kubectl path is set for the session
-                        withEnv(["PATH+=/var/jenkins_home/workspace/nginx/bin"]) {
-                            sh 'kubectl version --client'
+                        sh 'kubectl version --client'
                         }
                         
                         // Configure kubeconfig for EKS
