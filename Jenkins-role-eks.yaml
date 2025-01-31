@@ -4,19 +4,35 @@ metadata:
   name: jenkins-serviceaccount
   namespace: jenkins
   annotations:
-     eks.amazonaws.com/role-arn: arn:aws:iam::010438494949:role/jenkins-role-eks
+    eks.amazonaws.com/role-arn: arn:aws:iam::010438494949:role/jenkins-role-ecr 
 
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: jenkins-role
+  namespace: jenkins
+rules:
+- apiGroups: [""]
+  resources: ["pods", "services", "configmaps", "secrets"]
+  verbs: ["get", "list", "watch", "create", "update", "delete"]
+- apiGroups: ["apps"]
+  resources: ["deployments", "statefulsets", "daemonsets"]
+  verbs: ["get", "list", "watch", "create", "update", "delete"]
+
+---
 
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: jenkins-rolebinding
-  namespace: default
+  namespace: jenkins
 subjects:
 - kind: ServiceAccount
   name: jenkins-serviceaccount
-  namespace: default
+  namespace: jenkins
 roleRef:
   kind: Role
   name: jenkins-role
-  apiGroup: rbac.authorization.k8s.io    
+  apiGroup: rbac.authorization.k8s.io

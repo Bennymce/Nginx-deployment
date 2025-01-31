@@ -68,8 +68,22 @@ pipeline {
                         sh "mkdir -p /tmp/.kube"
                         
                         sh "aws eks update-kubeconfig --name ${CLUSTER_NAME} --region ${AWS_REGION} --kubeconfig /tmp/.kube/config"
+                        //i used this command to update to the cureent role name in my termkinal and kubectl got the right token to authenticate with the cluster 
+                        //sh "aws eks update-kubeconfig --name nginx-cluster --region us-east-1 --kubeconfig /tmp/.kube/config --role-arn arn:aws:iam::010438494949:role/jenkins-role-ecr"
             
                         sh "cat /tmp/.kube/config"
+                        // RBAC Tests
+                        echo "Testing Kubernetes RBAC Permissions"
+
+
+
+                        // Test: Check if Jenkins can list pods
+                        def listPods = sh(script: "kubectl get pods -n jenkins --kubeconfig /tmp/.kube/config", returnStatus: true)
+                        if (listPods != 0) {
+                            error("Failed: Jenkins does not have permission to list pods.")
+                        }
+
+
                         // Deploy application
                         sh "kubectl apply -f nginx-deployment.yaml --kubeconfig /tmp/.kube/config"
                         // sh "kubectl rollout status deployment/${APP_NAME} --kubeconfig /tmp/.kube/config"
