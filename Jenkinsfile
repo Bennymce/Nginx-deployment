@@ -49,7 +49,7 @@ pipeline {
                 PATH = "${env.HOME}/bin:${env.PATH}"
             } 
             steps {
-                withAWS(region: AWS_REGION, role: AWS_ROLE_ARN_EKS) {
+                withAWS(region: AWS_REGION, role: AWS_ROLE_ARN_ECR) {
                     script {
                         sh '''
                           # Install kubectl if not present
