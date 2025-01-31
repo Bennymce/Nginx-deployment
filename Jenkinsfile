@@ -50,26 +50,23 @@ pipeline {
                     script {
                         // Install kubectl in Jenkins user space
                         sh '''
-                          curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+                          curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl.sha256"
+                          sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
                           chmod +x kubectl
                           mkdir -p $HOME/bin
                           mv kubectl $HOME/bin/
-                          echo 'export PATH=$HOME/bin:$PATH' >> $HOME/.bashrc
                         '''
+                        
                         // Ensure kubectl path is set for the session
                         sh 'export PATH=$HOME/bin:$PATH && kubectl version --client'
 
                         // Configure kubeconfig for EKS
                         sh "mkdir -p /tmp/.kube"
                         sh "aws eks update-kubeconfig --name ${CLUSTER_NAME} --region ${AWS_REGION} --kubeconfig ${KUBECONFIG}"
-                        
+
                         // Deploy application
                         sh "kubectl apply -f nginx-deployment.yaml --kubeconfig ${KUBECONFIG}"
                         sh "kubectl rollout status deployment/${APP_NAME} --kubeconfig ${KUBECONFIG}"
-
-
-                        // sh "kubectl apply -f nginx-deployment.yaml --kubeconfig ${KUBECONFIG}"
-                        // sh "kubectl rollout status deployment/${APP_NAME} --kubeconfig ${KUBECONFIG}"
                     }
                 }
             }
