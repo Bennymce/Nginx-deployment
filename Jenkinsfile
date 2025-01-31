@@ -57,7 +57,7 @@ pipeline {
                         '''
                         
                         // Ensure kubectl path is set for the session
-                        withEnv(["PATH+bin=/var/jenkins_home/workspace/nginx/bin"]) {
+                        withEnv(["PATH+=/var/jenkins_home/workspace/nginx/bin"]) {
                             sh 'kubectl version --client'
                         }
                         
