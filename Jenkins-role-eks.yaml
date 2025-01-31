@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: jenkins-serviceaccount
+  namespace: jenkins
+  annotations:
+     eks.amazonaws.com/role-arn: arn:aws:iam::010438494949:role/jenkins-role-eks
+
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: jenkins-rolebinding
+  namespace: default
+subjects:
+- kind: ServiceAccount
+  name: jenkins-serviceaccount
+  namespace: default
+roleRef:
+  kind: Role
+  name: jenkins-role
+  apiGroup: rbac.authorization.k8s.io    
