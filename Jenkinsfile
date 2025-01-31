@@ -58,8 +58,10 @@ pipeline {
                         '''
                         
                         // Ensure kubectl path is set for the session
-                        sh 'export PATH=$HOME/bin:$PATH && kubectl version --client'
-
+                        withEnv(["PATH+bin=$HOME/bin"]) {
+                            sh 'kubectl version --client'
+                        }
+                        
                         // Configure kubeconfig for EKS
                         sh "mkdir -p /tmp/.kube"
                         sh "aws eks update-kubeconfig --name ${CLUSTER_NAME} --region ${AWS_REGION} --kubeconfig ${KUBECONFIG}"
