@@ -66,8 +66,10 @@ pipeline {
 
                         // Configure kubeconfig for EKS
                         sh "mkdir -p /tmp/.kube"
+                        
                         sh "aws eks update-kubeconfig --name ${CLUSTER_NAME} --region ${AWS_REGION} --kubeconfig /tmp/.kube/config"
-
+            
+                        sh "cat /tmp/.kube/config"
                         // Deploy application
                         sh "kubectl apply -f nginx-deployment.yaml --kubeconfig /tmp/.kube/config"
                         sh "kubectl rollout status deployment/${APP_NAME} --kubeconfig /tmp/.kube/config"
