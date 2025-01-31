@@ -15,7 +15,7 @@ spec:
       labels:
         app: nginx
     spec:
-      serviceAccountName: jenkins-sa-ecr
+      serviceAccountName: jenkins-serviceaccount
       containers:
       - name: nginx
         image: nginx:latest

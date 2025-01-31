@@ -11,7 +11,7 @@ pipeline {
         IMAGE_TAG = "latest"
         IMAGE_NAME = "${ECR_REPO}:${IMAGE_TAG}"
         AWS_ACCOUNT_ID = "010438494949"
-        KUBECONFIG = '/tmp/.kube/config'
+    
     }
 
     stages {
@@ -63,11 +63,11 @@ pipeline {
                         
                         // Configure kubeconfig for EKS
                         sh "mkdir -p /tmp/.kube"
-                        sh "aws eks update-kubeconfig --name ${CLUSTER_NAME} --region ${AWS_REGION} --kubeconfig ${KUBECONFIG}"
+                        sh "aws eks update-kubeconfig --name ${CLUSTER_NAME} --region ${AWS_REGION} --kubeconfig /tmp/.kube/config"
 
                         // Deploy application
-                        sh "kubectl apply -f nginx-deployment.yaml --kubeconfig ${KUBECONFIG}"
-                        sh "kubectl rollout status deployment/${APP_NAME} --kubeconfig ${KUBECONFIG}"
+                        sh "kubectl apply -f nginx-deployment.yaml --kubeconfig /tmp/.kube/config"
+                        sh "kubectl rollout status deployment/${APP_NAME} --kubeconfig /tmp/.kube/config"
                     }
                 }
             }
