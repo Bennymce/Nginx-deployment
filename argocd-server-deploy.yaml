@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: argocd-server
+  namespace: argocd
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: argocd-server
+  template:
+    metadata:
+      labels:
+        app: argocd-server
+    spec:
+      containers:
+        - name: argocd-server
+          image: argoproj/argocd:v2.8.2  # Ensure the version matches your setup
+          resources:
+            requests:
+              memory: "1Gi"
+              cpu: "1000m"
+            limits:
+              memory: "2Gi"
+              cpu: "1500m"
+          ports:
+            - containerPort: 8080
+          env:
+            - name: ARGOCD_SERVER_INSECURE
+              value: "true"
+          volumeMounts:
+            - name: argocd-cm
+              mountPath: /etc/argocd/config
+      volumes:
+        - name: argocd-cm
+          configMap:
+            name: argocd-cm
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: argocd-server
+  namespace: argocd
+spec:
+  type: LoadBalancer  # This will expose the ArgoCD server via a Load Balancer
+  ports:
+    - port: 80
+      targetPort: 8080
+  selector:
+    app: argocd-server
