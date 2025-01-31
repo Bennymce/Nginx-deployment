@@ -72,7 +72,7 @@ pipeline {
                         sh "cat /tmp/.kube/config"
                         // Deploy application
                         sh "kubectl apply -f nginx-deployment.yaml --kubeconfig /tmp/.kube/config"
-                        sh "kubectl rollout status deployment/${APP_NAME} --kubeconfig /tmp/.kube/config"
+                        // sh "kubectl rollout status deployment/${APP_NAME} --kubeconfig /tmp/.kube/config"
                     }
                 }
             }
