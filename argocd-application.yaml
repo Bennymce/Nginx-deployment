@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: nginx-deployment
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/your-org/nginx-deployment.git
+    targetRevision: main  # Branch to watch
+    path:  "." # Path to Kubernetes manifests
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: jenkins
+  syncPolicy:
+    automated:
+      prune: true  # Remove old resources
+      selfHeal: true  # Auto-sync changes
+    syncOptions:
+      - CreateNamespace=true

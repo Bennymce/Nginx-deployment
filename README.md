@@ -208,3 +208,4 @@ aws ec2 describe-instances --instance-ids 54.227.193.90  --query "Reservations[]
 aws iam list-attached-role-policies --role-name jenkins-role-ecr
 
 
+ssh -i test-project.pem ec2-user@

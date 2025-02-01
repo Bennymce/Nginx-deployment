@@ -13,15 +13,17 @@ spec:
       labels:
         app: argocd-server
     spec:
+      imagePullSecrets:
+        - name: registry-secret  
       containers:
         - name: argocd-server
-          image: argoproj/argocd:v2.8.2  # Ensure the version matches your setup
+          image: argoproj/argocd:v2.6.15  # Ensure the version matches your setup
           resources:
             requests:
-              memory: "1Gi"
+              memory: "1024Mi"
               cpu: "1000m"
             limits:
-              memory: "2Gi"
+              memory: "2048Mi"
               cpu: "1500m"
           ports:
             - containerPort: 8080

@@ -9,3 +9,14 @@
 		}
 	]
 }
+
+kubectl drain worker-nodes --ignore-daemonsets --delete-emptydir-data
+eksctl delete nodegroup --cluster nginx-cluster --name worker-nodes
+
+kubectl create secret docker-registry registry-secret \
+  --docker-server=010438494949.dkr.ecr.us-east-1.amazonaws.com \
+  --docker-username=AWS \
+  --docker-password=$(aws ecr get-login-password --region us-east-1) \
+  --docker-email=blessingsharpeu@gmail.com \
+  --namespace argocd
+  kubectl set image deployment/argocd-server argocd-server=argoproj/argocd:v2.6.15 -n argocd
