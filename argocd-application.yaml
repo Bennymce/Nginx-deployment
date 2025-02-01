@@ -6,7 +6,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://github.com/your-org/nginx-deployment.git
+    repoURL: https://github.com/Bennymce/Nginx-deployment.git
     targetRevision: main  # Branch to watch
     path:  "." # Path to Kubernetes manifests
   destination:
